@@ -19,4 +19,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('reservation/{date}',[ReservationController::class,'checkdate']);
+Route::post('reservation/date',[ReservationController::class,'checkDate']);
+Route::post('reservation/time',[ReservationController::class,'checkTime']);
+Route::post('reservation/sendotpcode',[ReservationController::class,'sendOtpCode']);
+Route::post('reservation/confirmationcode',[ReservationController::class,'confirmationCode']);
+Route::post('reservation/submit_information',[ReservationController::class,'submitInformation']);
+Route::post('reservation',[ReservationController::class,'reservation']);
+Route::post('reservation/{user}/delete',[ReservationController::class,'deleteReservation']);

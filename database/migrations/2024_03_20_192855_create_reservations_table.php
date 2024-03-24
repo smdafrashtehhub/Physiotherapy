@@ -24,6 +24,8 @@ return new class extends Migration
             $table->enum('payment_status',['online','cash']);
             $table->enum('referral_status',['yes','no']);
             $table->text('referral_reason')->nullable();
+
+            $table->unique(['date','time']);
             $table->softDeletes();
             $table->timestamps();
         });
