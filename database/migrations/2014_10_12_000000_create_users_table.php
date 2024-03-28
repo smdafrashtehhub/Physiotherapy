@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->nullable();
-            $table->string('family')->nullable();
+            $table->string('first_name')->nullable();
+            $table->string('last_name')->nullable();
             $table->string('user_name')->nullable();
-            $table->string('national_code')->nullable();
+            $table->string('national_code')->nullable()->unique();
             $table->string('address')->nullable();
             $table->integer('age')->nullable();
             $table->enum('gender',['male','female'])->nullable();
@@ -24,7 +24,7 @@ return new class extends Migration
             $table->enum('status',['active','inactive'])->default('active');
             $table->text('disease_record')->nullable();
             $table->string('email')->unique()->nullable();
-            $table->string('phone_number');
+            $table->string('phone_number')->unique();
 //            $table->string('phone_number_verify_code');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();

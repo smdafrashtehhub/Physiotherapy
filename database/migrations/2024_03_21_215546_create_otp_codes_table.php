@@ -14,7 +14,13 @@ return new class extends Migration
         Schema::create('otp_codes', function (Blueprint $table) {
             $table->id();
             $table->integer('otp_code');
-            $table->string('phone_number');
+            $table->foreignId('user_id');
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

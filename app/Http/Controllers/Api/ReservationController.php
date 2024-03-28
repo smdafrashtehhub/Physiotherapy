@@ -24,28 +24,34 @@ class ReservationController extends Controller
 
     //------------------------------------ checkdate ----------------------------------------
 
-    public function checkDate(Request $request)
+    public function checkDate()
     {
-        $workinghour = WorkingHour::where('date', $request->date)->get();
-        if ($workinghour->count())
+        if (WorkingHour::all()->count())
             return response()->json([
                 'status' => true,
-                'message1' => $workinghour,
-                'message2' => Reservation::where('date', $request->date)->get()
+                'work_hours' => WorkingHour::where('closed', 'no')->select('date', 'start_hour', 'end_hour')->get(),
+                'closed_days' => WorkingHour::where('closed', 'yes')->select('date')->get(),
+                'reservation' => Reservation::select('date', 'time')->get()
             ]);
         else {
+            return response()->json([
+                'status' => true,
+                'message1' => 'table is empty'
+            ]);
+        }
+//        else {
 //            $newDate=new Date('1402-12-17');
 //            $gregorianDate=Jalalian::fromFormat('Y-m-d', $date);
 //            $dayOfWeek = $gregorianDate->getDayOfWeek();
-            $gregorianDate = Jalalian::fromFormat('Y-m-d', $request->date)->toCarbon()->toDateString();
-            $dayOfWeek = Carbon::createFromFormat('Y-m-d', $gregorianDate)->dayName;
-            $workingweek = WokingWeek::where('day_of_week', $dayOfWeek)->get();
-            return response()->json([
-                'status' => true,
-                'message1' => $workingweek,
-                'message2' => Reservation::where('date', $request->date)->get()
-            ]);
-        }
+//            $gregorianDate = Jalalian::fromFormat('Y-m-d', $request->date)->toCarbon()->toDateString();
+//            $dayOfWeek = Carbon::createFromFormat('Y-m-d', $gregorianDate)->dayName;
+//            $workingweek = WokingWeek::where('day_of_week', $dayOfWeek)->get();
+//            return response()->json([
+//                'status' => true,
+//                'message1' => $workingweek,
+//                'message2' => Reservation::where('date', $request->date)->get()
+//            ]);
+//        }
     }
 
 //------------------------------------ checktime ----------------------------------------
@@ -60,8 +66,8 @@ class ReservationController extends Controller
 ////                'message' => '.نوبت انتخابی شما تکمیل است. در صورت تمایل میتوانید در صف انتظار بمانید'
 ////            ]);
 //        } else {
-            $sms = new SendSmsController;
-            $sms->sendCode($request->phone_number);
+        $sms = new SendSmsController;
+        $sms->sendCode($request->phone_number);
 //        }
 
     }
@@ -80,12 +86,11 @@ class ReservationController extends Controller
         $otpcode = OtpCode::where('phone_number', $request->phone_number)->first();
         if ($request->otpcode == $otpcode->otp_code) {
             $otpcode->delete();
-            if(Reservation::where(['date'=>$request->date,'time'=>$request->time])->count())
-            {
+            if (Reservation::where(['date' => $request->date, 'time' => $request->time])->count()) {
                 WaitingReservation::create([
-                   'phone_number'=>$request->phone_number,
-                   'date'=>$request->date,
-                   'time'=>$request->time,
+                    'phone_number' => $request->phone_number,
+                    'date' => $request->date,
+                    'time' => $request->time,
                 ]);
                 return response()->json([
                     'status' => true,
@@ -134,22 +139,29 @@ class ReservationController extends Controller
 
     public function reservation(ReservationRequest $request)
     {
-        $count_reservation=Reservation::where([
-            'user_id'=>$request->user_id,
+        if(WorkingHour::where([
             'date'=>$request->date,
+            'closed'=>'yes'
+        ])->count())
+            return response()->json([
+                'status' => false,
+                'message' => 'clinik in closed in this day'
+            ]);
+        $count_reservation = Reservation::where([
+            'user_id' => $request->user_id,
+            'date' => $request->date,
         ])->count();
-        if($count_reservation)
+        if ($count_reservation)
             return response()->json([
                 'status' => false,
                 'message' => 'شما در این روز رزرو کرده اید!'
             ]);
         Reservation::create([
-            'time'=>$request->time,
-            'date'=>$request->date,
-            'payment_status'=>$request->payment_status=='آنلاین'?'online':'cash',
-            'referral_status'=>$request->referral_status=='مراجعه کرده'?'yes':'no',
-            'referral_reason'=>$request->referral_reason,
-            'user_id'=>$request->user_id
+            'time' => $request->time,
+            'date' => $request->date,
+            'payment_status' => $request->payment_status == 'آنلاین' ? 'online' : 'cash',
+            'referral_status' => $request->referral_status == 'مراجعه کرده' ? 'yes' : 'no',
+            'user_id' => $request->user_id
         ]);
         return response()->json([
             'status' => true,
@@ -159,20 +171,22 @@ class ReservationController extends Controller
 
 //------------------------------------ delete_reservation ----------------------------------------
 
-    public function deleteReservation(Request $request,User $user)
+    public function deleteReservation(Request $request, User $user)
     {
-        $user->reservations->where('date',$request->date)->first()->delete();
-        $waiting_phones=WaitingReservation::where([
-            'date'=>$request->date,
-            'time'=>$request->time,
-        ])->pluck('phone_number');
-        WaitingReservation::where([
-            'date'=>$request->date,
-            'time'=>$request->time,
-        ])->delete();
-        foreach ($waiting_phones as $waiting_phone){
-            SmsWaitingReservation::dispatch($waiting_phone,$request->time,$request->date);
+        $user->reservations->where('date', $request->date)->first()->delete();
+        if (WaitingReservation::all()->count()) {
+            $waiting_phones = WaitingReservation::where([
+                'date' => $request->date,
+                'time' => $request->time,
+            ])->pluck('phone_number');
+            WaitingReservation::where([
+                'date' => $request->date,
+                'time' => $request->time,
+            ])->delete();
+            foreach ($waiting_phones as $waiting_phone) {
+                SmsWaitingReservation::dispatch($waiting_phone, $request->time, $request->date);
 
+            }
         }
     }
 }

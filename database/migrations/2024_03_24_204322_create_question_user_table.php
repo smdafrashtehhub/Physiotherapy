@@ -11,17 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('waiting_reservations', function (Blueprint $table) {
-            $table->id();
+        Schema::create('question_user', function (Blueprint $table) {
             $table->foreignId('user_id');
             $table->foreign('user_id')
                 ->references('id')
                 ->on('users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
-            $table->date('date');
-            $table->time('time');
-            $table->softDeletes();
+            $table->foreignId('question_id');
+            $table->foreign('question_id')
+                ->references('id')
+                ->on('questions')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+            $table->primary(['user_id','question_id']);
+            $table->enum('answer',['no','yes']);
             $table->timestamps();
         });
     }
@@ -31,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('waiting_reservations');
+        Schema::dropIfExists('question_user');
     }
 };

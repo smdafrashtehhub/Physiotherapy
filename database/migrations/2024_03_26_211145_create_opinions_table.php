@@ -11,17 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('waiting_reservations', function (Blueprint $table) {
+        Schema::create('opinions', function (Blueprint $table) {
             $table->id();
+            $table->text('comment');
+            $table->integer('score');
+            $table->string('subject');
             $table->foreignId('user_id');
             $table->foreign('user_id')
                 ->references('id')
                 ->on('users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
-            $table->date('date');
-            $table->time('time');
-            $table->softDeletes();
             $table->timestamps();
         });
     }
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('waiting_reservations');
+        Schema::dropIfExists('opinions');
     }
 };

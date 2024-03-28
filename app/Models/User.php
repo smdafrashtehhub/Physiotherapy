@@ -44,4 +44,18 @@ class User extends Authenticatable
     {
         return $this->hasMany(Reservation::class);
     }
+
+    public function questions()
+    {
+        return $this->belongsToMany(Question::class);
+    }
+    public function waitingreservations()
+    {
+        return $this->hasMany(WaitingReservation::class);
+    }
+
+    public function otpcod()
+    {
+        return $this->hasOne(OtpCode::class);
+    }
 }

@@ -16,6 +16,10 @@ return new class extends Migration
             $table->date('date');
             $table->time('start_hour')->nullable();
             $table->time('end_hour')->nullable();
+            $table->unique(['date','start_hour','end_hour']);
+            $table->unique(['date','start_hour']);
+            $table->unique(['date','end_hour']);
+            $table->enum('closed',['yes','no']);
             $table->softDeletes();
             $table->timestamps();
         });

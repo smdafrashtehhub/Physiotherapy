@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\OtpCode;
+use App\Models\User;
+use Carbon\Carbon;
 use Melipayamak\MelipayamakApi;
 use function response;
 
@@ -22,15 +24,23 @@ class SendSmsController extends Controller
 
     public function sendCode($phone_number)
     {
-        OtpCode::where('phone_number',$phone_number)->delete();
+
+
         $otpcode=random_int(10000,999999);
         $text = " کد تایید شما $otpcode میباشد.
         لغو 11";
         $this->mainSms($phone_number,$text);
-        OtpCode::create([
-           'otp_code'=>$otpcode,
-           'phone_number'=> $phone_number
+        $user=User::create([
+           'phone_number'=>$phone_number,
         ]);
+        $otp_code=OtpCode::create([
+           'otp_code'=>$otpcode,
+           'user_id'=> $user->id,
+        ]);
+//        dd(Carbon::now());
+//        $timeToDelete = Carbon::now()->addSeconds(7);
+//        if($otp_code->created_at->addSecond(5)->lt(Carbon::now()))
+//            $otp_code->delete();
         return response()->json([
             'status' => true,
             'message' => 'کد یکبار مصرف با موفقیت ارسال شد'
