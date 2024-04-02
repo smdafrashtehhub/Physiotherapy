@@ -27,7 +27,6 @@ class ReservationRequest extends FormRequest
             'time'=>'required',
             'date'=>'required',
             'payment_status'=>'required',
-            'referral_status'=>'required',
         ];
     }
     protected function failedValidation(Validator $validator)

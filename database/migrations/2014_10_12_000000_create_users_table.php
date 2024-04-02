@@ -25,6 +25,7 @@ return new class extends Migration
             $table->text('disease_record')->nullable();
             $table->string('email')->unique()->nullable();
             $table->string('phone_number')->unique();
+            $table->string('card_number')->nullable();
 //            $table->string('phone_number_verify_code');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();

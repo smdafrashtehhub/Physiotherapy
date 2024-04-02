@@ -11,17 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('opinions', function (Blueprint $table) {
+        Schema::create('comments', function (Blueprint $table) {
             $table->id();
-            $table->text('comment');
+            $table->text('content');
             $table->integer('score');
-            $table->string('subject');
+            $table->enum('subject',['service','clinic','product','article']);
+            $table->morphs('commentable');
+            $table->enum('status',['waiting','confirmed'])->default('waiting');
             $table->foreignId('user_id');
             $table->foreign('user_id')
                 ->references('id')
                 ->on('users')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
+            $table->softDeletes();
             $table->timestamps();
         });
     }
@@ -31,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('opinions');
+        Schema::dropIfExists('comments');
     }
 };

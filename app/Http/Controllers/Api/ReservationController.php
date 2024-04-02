@@ -16,11 +16,38 @@ use App\Models\WokingWeek;
 use App\Models\WorkingHour;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use MNDCo\IranianHoliday\IranianHoliday;
 use Morilog\Jalali\Jalalian;
 use function response;
 
 class ReservationController extends Controller
 {
+    public function visited(Reservation $reservation,Request $request)
+    {
+        $reservation->update([
+            'visited_status'=>$request->status
+        ]);
+    }
+    public function delete(Reservation $reservation)
+    {
+        $reservation->delete();
+        return response()->json([
+            'status'=>true,
+            'message'=>'reservation delete successfully'
+        ]);
+    }
+    public function table()
+    {
+        $reservation = DB::table('reservations')
+            ->join('users', 'reservations.user_id', '=', 'users.id')
+            ->select('reservations.time', 'reservations.payment_status','reservations.visited_status', 'users.first_name','users.gender','users.last_name','users.phone_number')
+            ->where('date', Jalalian::now()->format('Y/m/d'))
+            ->get();
+        return response()->json([
+            'status' => true,
+            'message1' =>$reservation
+        ]);    }
 
     //------------------------------------ checkdate ----------------------------------------
 
@@ -83,35 +110,68 @@ class ReservationController extends Controller
 
     public function confirmationCode(ConfirmationCodeRequest $request)
     {
-        $otpcode = OtpCode::where('phone_number', $request->phone_number)->first();
+        $otpcode = OtpCode::where('user_id', $request->user_id)->first();
         if ($request->otpcode == $otpcode->otp_code) {
             $otpcode->delete();
-            if (Reservation::where(['date' => $request->date, 'time' => $request->time])->count()) {
-                WaitingReservation::create([
-                    'phone_number' => $request->phone_number,
-                    'date' => $request->date,
-                    'time' => $request->time,
-                ]);
-                return response()->json([
-                    'status' => true,
-                    'message' => 'شما در صف انتظار قرار گرفتید'
-                ]);
-            }
-            if (!User::where('phone_number', $request->phone_number)->count())
+
+            if ($this->holidays($request->date)) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'اطلاعات شما ثبت نشده است'
+                    'message' => 'clinic in closed in this day'
                 ]);
-            else {
-                return response()->json([
-                    'status' => true,
-                    'message' => 'اطلاعات شما ثبت شده است'
-                ]);
+            }
+
+            if (Reservation::where([
+                'date' => $request->date,
+                'time' => $request->time
+            ])->count()) {
+                if (WaitingReservation::where([
+                    'user_id' => $request->user_id,
+                    'date' => $request->date,
+                    'time' => $request->time
+                ])->count()) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'before that You were waiting in line'
+                    ]);
+                } else {
+                    WaitingReservation::create([
+                        'user_id' => $request->user_id,
+                        'date' => $request->date,
+                        'time' => $request->time,
+                    ]);
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'now You are waiting in line'
+                    ]);
+                }
+            } else {
+                if (Reservation::where([
+                    'user_id' => $request->user_id,
+                    'date' => $request->date,
+                ])->count()) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'You have a reservation on this day!'
+                    ]);
+                } else {
+                    if (User::find($request->user_id)->national_code)
+                        return response()->json([
+                            'status' => true,
+                            'message' => 'Your information has been registered'
+                        ]);
+                    else {
+                        return response()->json([
+                            'status' => false,
+                            'message' => 'Your information has not been registered'
+                        ]);
+                    }
+                }
             }
         } else {
             return response()->json([
                 'status' => false,
-                'message' => 'کد یکبار مصرف را درست وارد نکرده اید.دوباره تلاش کنید'
+                'message' => 'You have not entered the one-time code correctly. Please try again'
             ]);
         }
     }
@@ -139,33 +199,16 @@ class ReservationController extends Controller
 
     public function reservation(ReservationRequest $request)
     {
-        if(WorkingHour::where([
-            'date'=>$request->date,
-            'closed'=>'yes'
-        ])->count())
-            return response()->json([
-                'status' => false,
-                'message' => 'clinik in closed in this day'
-            ]);
-        $count_reservation = Reservation::where([
-            'user_id' => $request->user_id,
-            'date' => $request->date,
-        ])->count();
-        if ($count_reservation)
-            return response()->json([
-                'status' => false,
-                'message' => 'شما در این روز رزرو کرده اید!'
-            ]);
+
         Reservation::create([
             'time' => $request->time,
             'date' => $request->date,
             'payment_status' => $request->payment_status == 'آنلاین' ? 'online' : 'cash',
-            'referral_status' => $request->referral_status == 'مراجعه کرده' ? 'yes' : 'no',
             'user_id' => $request->user_id
         ]);
         return response()->json([
             'status' => true,
-            'message' => 'رزرو با موفقیت انجام شد'
+            'message' => 'The reservation was made successfully'
         ]);
     }
 
@@ -173,6 +216,9 @@ class ReservationController extends Controller
 
     public function deleteReservation(Request $request, User $user)
     {
+        $user->update([
+            'card_number' => $request->card_number
+        ]);
         $user->reservations->where('date', $request->date)->first()->delete();
         if (WaitingReservation::all()->count()) {
             $waiting_phones = WaitingReservation::where([
@@ -188,5 +234,20 @@ class ReservationController extends Controller
 
             }
         }
+    }
+
+//------------------------------------ holidays ----------------------------------------
+    public function holidays($date)
+    {
+        $clinic_holidays = WorkingHour::where([
+            'date' => $date,
+            'closed' => 'yes'
+        ])->count();
+        $holiday = new IranianHoliday();
+        $official_holidays = $holiday->checkIsHoliday($date);
+        if ($clinic_holidays || $official_holidays) {
+            return true;
+        }
+        return false;
     }
 }

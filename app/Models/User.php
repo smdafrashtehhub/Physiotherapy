@@ -58,4 +58,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(OtpCode::class);
     }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
 }

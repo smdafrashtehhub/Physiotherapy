@@ -10,15 +10,12 @@ class WorkingHoursController extends Controller
 {
     public function workingHours(Request $request)
     {
-        foreach ($request->start_hour as $key=>$value)
-        {
             WorkingHour::create([
                 'date'=>$request->date,
-                'start_hour'=>$value,
-                'end_hour'=>$request->end_hour[$key],
+                'start_hour'=>$request->start_hour,
+                'end_hour'=>$request->end_hour,
                 'closed'=>'no'
             ]);
-        }
         return response()->json([
             'status'=>true,
             'message'=>'working hour created'

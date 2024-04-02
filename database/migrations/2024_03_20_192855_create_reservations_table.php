@@ -21,8 +21,8 @@ return new class extends Migration
                 ->onDelete('cascade');
             $table->date('date');
             $table->time('time');
-            $table->enum('payment_status',['online','cash']);
-            $table->enum('referral_status',['yes','no']);
+            $table->enum('payment_status',['online','cash'])->default('cash');
+            $table->enum('visited_status',['yes','no'])->default('no');
 
             $table->unique(['date','time','deleted_at']);
             $table->softDeletes();

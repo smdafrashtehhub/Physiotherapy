@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "73fbaec6e7ecaa5dab0ff8bbe9277483",
+    "content-hash": "3812a7d4a78aec46b6d32ec364362a9e",
     "packages": [
         {
             "name": "beberlei/assert",
@@ -722,6 +722,47 @@
                 }
             ],
             "time": "2023-10-12T05:21:21+00:00"
+        },
+        {
+            "name": "geniusts/hijri-dates",
+            "version": "1.1.9",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/GeniusTS/hijri-dates.git",
+                "reference": "af15f8849eea95b2faa463c751483be69bff37d2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/GeniusTS/hijri-dates/zipball/af15f8849eea95b2faa463c751483be69bff37d2",
+                "reference": "af15f8849eea95b2faa463c751483be69bff37d2",
+                "shasum": ""
+            },
+            "require": {
+                "nesbot/carbon": "^2.16|^1.22",
+                "php": ">=7"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "GeniusTS\\HijriDate\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Abdul-Kader Zein-Eddin",
+                    "email": "aboudeh1987@gmail.com"
+                }
+            ],
+            "description": "PHP library to convert Gregorian date to Hijri date and vice versa",
+            "support": {
+                "issues": "https://github.com/GeniusTS/hijri-dates/issues",
+                "source": "https://github.com/GeniusTS/hijri-dates/tree/1.1.9"
+            },
+            "time": "2021-05-03T02:22:08+00:00"
         },
         {
             "name": "graham-campbell/result-type",
@@ -2236,6 +2277,65 @@
                 "source": "https://github.com/Melipayamak/melipayamak-php/tree/1.0.0"
             },
             "time": "2019-12-23T13:19:36+00:00"
+        },
+        {
+            "name": "mndco/iranian-holidays",
+            "version": "1.1402",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mndco/iranian-holidays.git",
+                "reference": "8fb89ea465b69bb194b729034bd1a1df44d57f87"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mndco/iranian-holidays/zipball/8fb89ea465b69bb194b729034bd1a1df44d57f87",
+                "reference": "8fb89ea465b69bb194b729034bd1a1df44d57f87",
+                "shasum": ""
+            },
+            "require": {
+                "geniusts/hijri-dates": "^1.1",
+                "morilog/jalali": "^3.1",
+                "php": ">=5.5"
+            },
+            "require-dev": {
+                "davincho/tabulapdf-php-wrapper": "^0.1.3",
+                "phpunit/phpunit": "^10.2"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "MNDCo\\IranianHoliday\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Hossein Piri",
+                    "email": "info@mndco.ir",
+                    "homepage": "http://mndco.ir"
+                }
+            ],
+            "description": "Investigating the closure of a special day in Iran",
+            "keywords": [
+                "Jalali",
+                "date",
+                "datetime",
+                "holiday",
+                "iranians-holiday",
+                "laravel",
+                "persian-holiday",
+                "pholiday",
+                "php",
+                "time"
+            ],
+            "support": {
+                "issues": "https://github.com/mndco/iranian-holidays/issues",
+                "source": "https://github.com/mndco/iranian-holidays"
+            },
+            "time": "2023-07-11T22:37:55+00:00"
         },
         {
             "name": "monolog/monolog",

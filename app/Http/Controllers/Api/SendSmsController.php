@@ -43,7 +43,7 @@ class SendSmsController extends Controller
 //            $otp_code->delete();
         return response()->json([
             'status' => true,
-            'message' => 'کد یکبار مصرف با موفقیت ارسال شد'
+            'message' => 'One-time use code sent successfully'
         ]);
     }
 
